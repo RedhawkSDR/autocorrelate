@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE softpkg PUBLIC "-//JTRS//DTD SCA V2.2.2 SPD//EN" "softpkg.dtd">
+<softpkg id="DCE:ba63a554-d3dd-420a-9dce-6b34caa63268" name="autocorrelate" type="sca_compliant">
+  <title></title>
+  <author>
+    <name>null</name>
+  </author>
+  <propertyfile type="PRF">
+    <localfile name="autocorrelate.prf.xml"/>
+  </propertyfile>
+  <descriptor>
+    <localfile name="autocorrelate.scd.xml"/>
+  </descriptor>
+  <implementation id="cpp">
+    <description>The implementation contains descriptive information about the template for a software component.</description>
+    <code type="Executable">
+      <localfile name="cpp/autocorrelate"/>
+      <entrypoint>cpp/autocorrelate</entrypoint>
+    </code>
+    <compiler name="/usr/bin/gcc" version="4.1.2"/>
+    <programminglanguage name="C++"/>
+    <humanlanguage name="EN"/>
+    <os name="Linux"/>
+    <dependency type="runtime_requirements">
+      <softpkgref>
+        <localfile name="/components/fftlib/fftlib.spd.xml"/>
+        <implref refid="firstImplementation"/>
+      </softpkgref>
+    </dependency>
+    <dependency type="runtime_requirements">
+      <softpkgref>
+        <localfile name="/components/dsp/dsp.spd.xml"/>
+        <implref refid="firstImplementation"/>
+      </softpkgref>
+    </dependency>
+    <processor name="x86"/>
+    <processor name="x86_64"/>
+  </implementation>
+</softpkg>

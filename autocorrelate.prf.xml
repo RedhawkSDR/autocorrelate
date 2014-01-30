@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties PUBLIC "-//JTRS//DTD SCA V2.2.2 PRF//EN" "properties.dtd">
+<properties>
+  <simple id="correlationSize" mode="readwrite" type="ulong">
+    <description>Size of correlation frame in samples</description>
+    <value>4096</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="inputOverlap" mode="readwrite" type="long">
+    <description>Input overlap in samples.  Must be smaller then correlationSize.  Negative numbers are allowed which means you skip input data</description>
+    <value>0</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="numAverages" mode="readwrite" type="ulong">
+    <description>Block average output frames</description>
+    <value>1</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="outputType" mode="readwrite" type="string">
+    <description>NORMAL is the standard autocorrelation layout where the center spike is in the middle of the output frame
+
+ROTATED flips the front and back of the display.  This puts the center spike at index 0 and frame index chorosponds exactly to the delay.  This makes it easy to measure the correlation delay.
+
+SUPERIMPOSED is like ROTATED but the 2nd half of the output frame is flipped and added to the first 1/2.  autocorrelation will be approximatly symetric for indicies close to 0 since the correlation output for a dealay of N is approximatly the same as an advance of N for small N.  The superposition adds the correlation output for the delay as well as the advace to get twice the averaging effect. </description>
+    <value>NORMAL</value>
+    <enumerations>
+      <enumeration label="NORMAL" value="NORMAL"/>
+      <enumeration label="ROTATED" value="ROTATED"/>
+      <enumeration label="SUPERIMPOSED" value="SUPERIMPOSED"/>
+    </enumerations>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="zeroMean" mode="readwrite" type="boolean">
+    <description>Remove mean prior to correlating</description>
+    <value>true</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+  <simple id="zeroCenter" mode="readwrite" type="boolean">
+    <description>Zero out the center chorosponding to no delay.  This will always be a &quot;huge&quot; value.  So zero it out so it doesn't effect the display.</description>
+    <value>false</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
+</properties>
