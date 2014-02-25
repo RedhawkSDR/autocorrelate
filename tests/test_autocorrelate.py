@@ -17,26 +17,8 @@ from omniORB import any
 from ossie.cf import CF
 from omniORB import CORBA
 
-def plotFreqResponse(signal, fftNum, sampleRate):
-    #freqResponse = [20*math.log(max(abs(x),1e-9),10) for x in scipy.fftpack.fftshift(scipy.fftpack.fft(signal,fftNum))]
-    freqResponse = scipy.fftpack.fftshift(scipy.fftpack.fft(signal,fftNum))
-    freqAxis =  scipy.fftpack.fftshift(scipy.fftpack.fftfreq(fftNum,1.0/sampleRate))
-    matplotlib.pyplot.plot(freqAxis, freqResponse)
-    matplotlib.pyplot.show()
-    
-#     mean = sum(signal)/float(len(signal))
-#     print "mean is %s" %mean 
-#     meanRemvoed=  [x-mean for x in signal]
-#     #freqResponseA = [20*math.log(max(abs(x),1e-9),10) for x in scipy.fftpack.fftshift(scipy.fftpack.fft(meanRemvoed,fftNum))]
-#     freqResponseA = scipy.fftpack.fftshift(scipy.fftpack.fft(meanRemvoed,fftNum))
-#     matplotlib.pyplot.plot(freqAxis, freqResponseA)
-#     matplotlib.pyplot.show()
-# 
-#     matplotlib.pyplot.plot([x-y for x, y in zip(freqResponse,freqResponseA)]) 
-#     matplotlib.pyplot.show()
-
+DISPLAY = False
         
-
 def toClipboard(data):
     import pygtk
     pygtk.require('2.0')
@@ -75,6 +57,19 @@ def genSqWave(fs, freq, numPts, cx=True, startTime=0, amp=1):
             nextTransition+=freqDelta
     return output
 
+def genCorrelatedData(numPts, taps, mean=0, stddev=1):
+    output=[]
+    input =[]
+    #simple FIR filter to correlate the data
+    
+    for i in xrange(numPts):
+        next = random.gauss(mean,stddev) #white noise input data
+        input.append(next)
+        for index, value in taps:
+            if index<=i:
+                next+=value*output[-index]
+        output.append(next)
+    return output        
 
 class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     """Test for all component implementations in autocorrelate"""
@@ -111,82 +106,198 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     def testScaBasicBehavior(self):
         pass
     
-    def testRealData(self):
-        sampleRate = 10e3
-        #input = [x/sampleRate for x in range(int(5e4))]
-        #input = genSinWave(sampleRate, 100,int(5e4),False)
-        #input = genSqWave(sampleRate, 100,int(5e4),False)
-        #input = [random.gauss(0,1.0) for _ in xrange(int(5e4))]
-        #input = [random.random() for _ in xrange(int(5e4))]
-        #input = genSinWave(sampleRate, 100,int(5e4),False)
-        #input = [x+1 for x in input]
-        
-        f = file('/home/bsg/bitsout','r')
-        s = f.read()
-        shortInput = struct.unpack('%sh'%(len(s)/2),s)
-        input = [float(x) for x in shortInput]
-        
-        numFrames = 3800
-        print "numFrames = ", numFrames
-#         for i in xrange(1,numFrames):
-#             iSlice = input[i*360:(i+1)*360]
-#             out = [x+y for x, y in zip(out,iSlice)]
-#         matplotlib.pyplot.plot(range(360), out)
-#         matplotlib.pyplot.show()
-#         return 
-        input = input[:numFrames*360]
+    def testReal1(self):
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.realData()
+    
+    def testReal2(self):        
+        self.comp.zeroCenter=True;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.realData()
 
+    def testReal3(self):
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=True;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.realData() 
 
+    def testReal4(self):
         self.comp.zeroCenter=True;
         self.comp.zeroMean=True;
-        self.comp.correlationSize=3000
+        self.comp.correlationSize=101
         self.comp.inputOverlap=0
-        self.comp.numAverages=3000
-        print self.comp.outputType
-        #self.comp.outputType="ROTATED"
-        self.comp.outputType="SUPERIMPOSED"
-        #self.comp.outputType="NORMAL"
-        print self.comp.outputType
-                
-        inSlice = input[:int(self.comp.correlationSize)]
+        self.comp.numAverages=0
+        self.realData() 
+    
+    def testReal5(self):   
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "ROTATED"
+        self.realData()
+
+    def testReal6(self):        
+        self.comp.zeroCenter=True;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "ROTATED"
+        self.realData()
+
+    def testReal7(self):
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=True;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "ROTATED"
+        self.realData() 
+
+    def testReal8(self):
+        self.comp.zeroCenter=True;
+        self.comp.zeroMean=True;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "ROTATED"
+        self.realData() 
+
+    def testReal9(self):
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "SUPERIMPOSED"
+        self.realData()
+    
+    def testReal10(self):        
+        self.comp.zeroCenter=True;
+        self.comp.zeroMean=False;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "SUPERIMPOSED"
+        self.realData()
+
+    def testReal11(self):
+        self.comp.zeroCenter=False;
+        self.comp.zeroMean=True;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "SUPERIMPOSED"
+        self.realData() 
+
+    def testReal12(self):
+        self.comp.zeroCenter=True;
+        self.comp.zeroMean=True;
+        self.comp.correlationSize=101
+        self.comp.inputOverlap=0
+        self.comp.numAverages=0
+        self.comp.outputType = "SUPERIMPOSED"
+        self.realData() 
+    
+    def realData(self):
+        sampleRate = 10e3        
+        #create random data but correlate it by running it threw a one tap IIR filter
+        tapIndex = 17        
+        taps=((tapIndex,.98),)
+        input = genCorrelatedData(self.comp.correlationSize,taps,0, 1)
         
+        #now run it threw the component
         output = self.main(input, False, sampleRate)
-        print "got output", len(output)
-        print "len input", len(input)
-        print self.comp.correlationSize
         
-        #toClipboard(input)
-        c = numpy.correlate(inSlice,inSlice,'full')
-        print len(c)
+        #now calculate the "excpected output"
+        if self.comp.zeroMean:
+            #if zero mean - remove the mean from our correlation Index
+            avg = sum(input)/len(input)
+            corlInput= [x-avg for x in input]
+        else:
+            corlInput= input
         
-        outFrame = output[-1]
+        c = numpy.correlate(corlInput,corlInput,'full')
         
-        #plotFreqResponse(outFrame, 1024,1)
+        frameLen = 2*self.comp.correlationSize-1
+        if self.comp.outputType=="NORMAL":
+            #centerIndex at the middle and tap indicies on either side 
+            centerIndex = self.comp.correlationSize-1
+            maxIndicies = [centerIndex-tapIndex, centerIndex+tapIndex]
+        else:
+            #centerIndex at the center
+            centerIndex = 0
+            #grab the second half of the data
+            secondHalf = c[:self.comp.correlationSize-1]
+            #this is the first half of the data
+            c = list(c[self.comp.correlationSize-1:])
+            if self.comp.outputType=="SUPERIMPOSED":
+                #adjust the frameLen to be the correlation size
+                frameLen =  int(self.comp.correlationSize)
+                #add the flipped second half to the firsthalf to superimpose the data
+                i = frameLen-1
+                for val in secondHalf:
+                    c[i]+=val
+                    i-=1            
+                #only one maxIndex that we care about since we've added the two max indicies on top of each other
+                maxIndicies = [tapIndex]
+            else: #ROTATED
+                #extend the second half
+                c.extend(secondHalf)
+                #maxIndicies are near the beginnign and end of the frame
+                maxIndicies = [tapIndex, frameLen-tapIndex]
         
-        if output:
+        #if we need to zero the CenterIndex - then do so
+        if self.comp.zeroCenter:
+            c[centerIndex]=0
         
-            frameSize = len(outFrame)
-            #matplotlib.pyplot.plot([1.0/sampleRate*x for x in range(frameSize)], input[:frameSize])
-            #matplotlib.pyplot.show()
-            matplotlib.pyplot.plot(range(frameSize), outFrame)
-            #matplotlib.pyplot.show()
-            #matplotlib.pyplot.plot([1.0/sampleRate*x for x in range(frameSize)], output[1])
-            
-            #matplotlib.pyplot.plot(range(frameSize), c)
+        #the outFrame is the first frame we care about
+        outFrame = output[0]
+        
+        if DISPLAY:
+        
+            matplotlib.pyplot.plot(range(frameLen), outFrame)
             matplotlib.pyplot.show()
+        
+        #make sure the outputFrame is the right lenght
+        self.assertTrue(len(outFrame)==len(c)==frameLen)
+        #make sure our output is the same as the numpy output
+        self.assertTrue(all([abs(x-y)<.1 for x, y in zip(outFrame, c)]))
+        #sort the output to find where the biggest indicies are
+        maxVals = [(y,x) for (x,y) in enumerate(outFrame)]
+        maxVals.sort(reverse=True)
+        
+        if self.comp.zeroCenter:
+            #we've already zeroed out the centerIndex - so check the start of the maxValues to get the maxIndicies
+            calMaxIndicies = [x[1] for x in maxVals[:len(maxIndicies)]]
+        else:
+            if self.comp.outputType!="SUPERIMPOSED":
+                #typical case
+                #make sure the cetnerIndex is the maxIndex
+                self.assertTrue(maxVals[0][1]==centerIndex)
+                #our next highest indicies are associated with the correlation we've introduced
+                calMaxIndicies = [x[1] for x in maxVals[1:3]]
+            else:
+                if maxIndicies[0]==centerIndex:
+                    #use the second index
+                    calMaxIndicies=[maxIndicies[1]]
+                else:
+                    #this is a wierd corner case -- the superposition actually makes the correlation output bigger at the tapIndex then at the centerIndex!
+                    calMaxIndicies=[maxIndicies[0]]
             
-            print "start"
-            print c[:10]
-            print outFrame[:10]
-            
-            print "stop"
-            
-            print c[-5:]
-            print outFrame[-5:]
-            
-            maxDif = max([abs(x-y) for x, y in zip(c,outFrame)])
-            print "maxDif = ", maxDif
-            assert(maxDif<.01)
+        calMaxIndicies.sort()
+        self.assertTrue(maxIndicies==calMaxIndicies)
     
     def setupComponent(self):
         #######################################################################
@@ -251,18 +362,12 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         framed = []
         i=0
         if sri.subsize>0:
+            #break out the data into frames according to the subsize
             while i*sri.subsize<len(out):
                 framed.append(out[i*sri.subsize:(i+1)*sri.subsize])
                 i+=1
             out=framed
         return out
-        
-    # TODO Add additional tests here
-    #
-    # See:
-    #   ossie.utils.bulkio.bulkio_helpers,
-    #   ossie.utils.bluefile.bluefile_helpers
-    # for modules that will assist with testing components with BULKIO ports
     
 if __name__ == "__main__":
     ossie.utils.testing.main("../autocorrelate.spd.xml") # By default tests all implementations
