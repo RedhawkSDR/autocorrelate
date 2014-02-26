@@ -277,6 +277,9 @@ void autocorrelate_i::inputOverlapChanged(const std::string&)
 }
 void autocorrelate_i::numAveragesChanged(const std::string&)
 {
+	//zero numAverages is not valid - change to 1
+	if (numAverages==0)
+		numAverages=1;
 	updateNumAverages=true;
 	paramsChanged=true;
 }

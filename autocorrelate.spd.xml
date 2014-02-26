@@ -5,6 +5,7 @@
   <author>
     <name>null</name>
   </author>
+  <description>Frequency domain implemenation of a windowed autocorolation algorithim.  This algorthim works by windowing the input data to break it up into seperate frames.  Each frame is independantly autocorolated with each other using a &quot;full&quot; autocorolatino which includes the full transient response.  This is efficiently computed in the frequency domain.</description>
   <propertyfile type="PRF">
     <localfile name="autocorrelate.prf.xml"/>
   </propertyfile>
