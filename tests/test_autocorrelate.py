@@ -212,15 +212,15 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     
     def realData(self):
         sampleRate = 10e3        
-        #create random data but correlate it by running it threw a one tap IIR filter
+        #create random data but correlate it by running it through a one-tap IIR filter
         tapIndex = 17        
         taps=((tapIndex,.98),)
         input = genCorrelatedData(self.comp.correlationSize,taps,0, 1)
         
-        #now run it threw the component
+        #now run it through the component
         output = self.main(input, False, sampleRate)
         
-        #now calculate the "excpected output"
+        #now calculate the "expected output"
         if self.comp.zeroMean:
             #if zero mean - remove the mean from our correlation Index
             avg = sum(input)/len(input)
@@ -255,7 +255,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             else: #ROTATED
                 #extend the second half
                 c.extend(secondHalf)
-                #maxIndicies are near the beginnign and end of the frame
+                #maxIndicies are near the beginning and end of the frame
                 maxIndicies = [tapIndex, frameLen-tapIndex]
         
         #if we need to zero the CenterIndex - then do so
@@ -293,7 +293,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
                     #use the second index
                     calMaxIndicies=[maxIndicies[1]]
                 else:
-                    #this is a wierd corner case -- the superposition actually makes the correlation output bigger at the tapIndex then at the centerIndex!
+                    #this is a weird corner case -- the superposition actually makes the correlation output bigger at the tapIndex then at the centerIndex!
                     calMaxIndicies=[maxIndicies[0]]
             
         calMaxIndicies.sort()
