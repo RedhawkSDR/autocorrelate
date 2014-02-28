@@ -16,23 +16,23 @@ class autocorrelate_i : public autocorrelate_base
         int serviceFunction();
 
     private:
-          void correlationSizeChanged(const std::string&);
-          void inputOverlapChanged(const std::string&);
-          void numAveragesChanged(const std::string&);
-          void outputTypeChanged(const std::string&);
-          void zeroMeanChanged(const std::string&);
-          void zeroCenterChanged(const std::string&);
-          Autocorrelator::OUTPUT_TYPE translateOutputType();
+        void correlationSizeChanged(const std::string&);
+        void inputOverlapChanged(const std::string&);
+        void numAveragesChanged(const std::string&);
+        void outputTypeChanged(const std::string&);
+        void zeroMeanChanged(const std::string&);
+        void zeroCenterChanged(const std::string&);
+        Autocorrelator::OUTPUT_TYPE translateOutputType();
 
-            RealVector realOutput;
-            Autocorrelator autocorrelator;
-            bool paramsChanged;
-            bool updateCorrelationSize;
-            bool updateInputOverlap;
-            bool updateNumAverages;
-            bool updateOutputType;
-            bool updateZeroMean;
-            bool updateZeroCenter;
+        RealVector realOutput;
+        Autocorrelator autocorrelator;
+        bool paramsChanged;
+        bool updateCorrelationSize;
+        bool updateInputOverlap;
+        bool updateNumAverages;
+        bool updateOutputType;
+        bool updateZeroMean;
+        bool updateZeroCenter;
 };
 
 #endif
