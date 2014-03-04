@@ -7,7 +7,10 @@ from ossie.utils import sb
 import math
 import time
 
-import matplotlib.pyplot
+DISPLAY = False
+if DISPLAY:
+    import matplotlib.pyplot
+
 import numpy
 import scipy.fftpack
 import random
@@ -17,8 +20,6 @@ from omniORB import any
 from ossie.cf import CF
 from omniORB import CORBA
 
-DISPLAY = False
-        
 def toClipboard(data):
     import pygtk
     pygtk.require('2.0')
