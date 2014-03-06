@@ -1,10 +1,11 @@
+
 #ifndef AUTOCORRELATE_IMPL_BASE_H
 #define AUTOCORRELATE_IMPL_BASE_H
 
 #include <boost/thread.hpp>
 #include <ossie/Resource_impl.h>
 
-#include "bulkio/bulkio.h"
+#include <bulkio/bulkio.h>
 
 #define NOOP 0
 #define FINISH -1
