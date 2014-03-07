@@ -5,14 +5,14 @@
  * This file is part of REDHAWK Basic Components autocorrelate.
  *
  * REDHAWK Basic Components autocorrelate is free software: you can redistribute it and/or modify it under the terms of
- * the GNU Lesser General Public License as published by the Free Software Foundation, either
+ * the GNU General Public License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
  *
  * REDHAWK Basic Components autocorrelate is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE.  See the GNU Lesser General Public License for more details.
+ * PURPOSE.  See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License along with this
+ * You should have received a copy of the GNU General Public License along with this
  * program.  If not, see http://www.gnu.org/licenses/.
  */
 /**************************************************************************
@@ -217,6 +217,19 @@ int autocorrelate_i::serviceFunction()
 		return NORMAL;
 	}
 
+	if (streamID!=tmp->streamID)
+		{
+			if (streamID=="")
+				streamID=tmp->streamID;
+			else
+			{
+				LOG_WARN(autocorrelate_i, "Dropping data from unknown stream ID.  Expected "
+						<< streamID << " received " << tmp->streamID);
+				delete tmp; //must delete the dataTransfer object when no longer needed
+				return NORMAL;
+			}
+		}
+
 	//use one big paramsChanged to reduce the number of booleans we will evaluate per loop
 	if (paramsChanged)
 	{
@@ -276,6 +289,12 @@ int autocorrelate_i::serviceFunction()
 	}
 	if (!realOutput.empty())
 		dataFloat_out->pushPacket(realOutput, tmp->T, tmp->EOS, tmp->streamID);
+
+	if (tmp->EOS) {
+		LOG_DEBUG(autocorrelate_i, "Received EOS for stream: '" << tmp->streamID << "'");
+		streamID = ""; // Reset streamID on EOS to allow processing of new stream
+		autocorrelator.flush();
+	}
 
 	delete tmp; // IMPORTANT: MUST RELEASE THE RECEIVED DATA BLOCK
 	return NORMAL;
