@@ -28,17 +28,121 @@
 
 PREPARE_LOGGING(autocorrelate_i)
 
-autocorrelate_i::autocorrelate_i(const char *uuid, const char *label) :
-    autocorrelate_base(uuid, label),
-        autocorrelator(realOutput, correlationSize, inputOverlap, numAverages,translateOutputType(),zeroMean, zeroCenter),
-        paramsChanged(false),
-        updateCorrelationSize(false),
-        updateInputOverlap(false),
-        updateNumAverages(false),
-        updateOutputType(false),
-        updateZeroMean(false),
-        updateZeroCenter(false)
+AutocorrelatorProcessor::AutocorrelatorProcessor(std::vector<float>& outReal, std::vector<std::complex<float> >& outComplex, size_t correlationSz, long overlap, size_t numAverages, autocorrelator_output::type outType, bool zeroMean, bool zeroCenter):
+	realOut(outReal),
+	complexOut(outComplex),
+	realAutocorrelator(outReal,correlationSz, overlap, numAverages, outType, zeroMean, zeroCenter),
+	complexAutocorrelator(outComplex,correlationSz, overlap, numAverages, outType, zeroMean, zeroCenter),
+	isComplex(false),
+	output(outType),
+	correlationSize(correlationSz),
+	inputOverlap(overlap)
+{
+	//exponential averaging technique doesn't decimate output frames
+	//we may change this later
+	params.outputFramesPerInputFrame=1;
+	setSubsize();
+	setConsumeLen();
+}
 
+AutocorrelatorProcessor::SriParams AutocorrelatorProcessor::processReal(std::vector<float>& data)
+{
+	complexOut.clear();
+	if (isComplex)
+	{
+		complexAutocorrelator.flush();
+		isComplex=false;
+	}
+	realAutocorrelator.run(data);
+	if (params.forcePush)
+	{
+		SriParams ret = params;
+		params.forcePush=false;
+		return ret;
+	}
+	return params;
+}
+AutocorrelatorProcessor::SriParams AutocorrelatorProcessor::processComplex(std::vector<std::complex<float> >&data)
+{
+	realOut.clear();
+	if (!isComplex)
+	{
+		realAutocorrelator.flush();
+		isComplex=true;
+	}
+	complexAutocorrelator.run(data);
+	if (params.forcePush)
+	{
+		SriParams ret = params;
+		params.forcePush=false;
+		return ret;
+	}
+	return params;
+}
+
+void AutocorrelatorProcessor::setCorrelationSize(const size_t& newVal)
+{
+	realAutocorrelator.setCorrelationSize(newVal);
+	complexAutocorrelator.setCorrelationSize(newVal);
+	correlationSize=newVal;
+	setSubsize();
+	setConsumeLen();
+}
+void AutocorrelatorProcessor::setOverlap(const size_t& newVal)
+{
+	realAutocorrelator.setOverlap(newVal);
+	complexAutocorrelator.setOverlap(newVal);
+	inputOverlap=newVal;
+	setConsumeLen();
+}
+void AutocorrelatorProcessor::setNumAverages(const size_t& newVal)
+{
+	realAutocorrelator.setNumAverages(newVal);
+	complexAutocorrelator.setNumAverages(newVal);
+}
+void AutocorrelatorProcessor::setOutputType(autocorrelator_output::type& newVal)
+{
+	realAutocorrelator.setOutputType(newVal);
+	complexAutocorrelator.setOutputType(newVal);
+	output=newVal;
+	setSubsize();
+}
+void AutocorrelatorProcessor::setZeroMean(const bool& newVal)
+{
+	realAutocorrelator.setZeroMean(newVal);
+	complexAutocorrelator.setZeroMean(newVal);
+}
+void AutocorrelatorProcessor::setZeroCenter(const bool& newVal)
+{
+	realAutocorrelator.setZeroCenter(newVal);
+	complexAutocorrelator.setZeroCenter(newVal);
+}
+void AutocorrelatorProcessor::setSubsize()
+{
+	size_t subsize;
+	if (output==autocorrelator_output::SUPERIMPOSED)
+		subsize = correlationSize;
+	else
+		subsize =2*correlationSize-1;
+	if (subsize!= params.subsize)
+	{
+		params.subsize = subsize;
+		params.forcePush=true;
+	}
+
+}
+void AutocorrelatorProcessor::setConsumeLen()
+{
+	size_t consumeLen= correlationSize-inputOverlap;
+	if (consumeLen!= params.consumeLen)
+	{
+		params.consumeLen = consumeLen;
+		params.forcePush=true;
+	}
+}
+
+autocorrelate_i::autocorrelate_i(const char *uuid, const char *label) :
+    autocorrelate_base(uuid, label)
 {
 		setPropertyChangeListener("correlationSize", this, &autocorrelate_i::correlationSizeChanged);
 		setPropertyChangeListener("inputOverlap", this, &autocorrelate_i::inputOverlapChanged);
@@ -50,22 +154,24 @@ autocorrelate_i::autocorrelate_i(const char *uuid, const char *label) :
 
 autocorrelate_i::~autocorrelate_i()
 {
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		delete i->second;
 }
 
 
-Autocorrelator::OUTPUT_TYPE autocorrelate_i::translateOutputType() {
-      Autocorrelator::OUTPUT_TYPE outType;
+autocorrelator_output::type autocorrelate_i::translateOutputType() {
+	autocorrelator_output::type outType;
       if (outputType == "ROTATED")
-              outType = Autocorrelator::ROTATED;
+              outType = autocorrelator_output::ROTATED;
       else if (outputType == "SUPERIMPOSED")
-              outType = Autocorrelator::SUPERIMPOSED;
+              outType = autocorrelator_output::SUPERIMPOSED;
       else
       {
               if (outputType != "NORMAL")
-                      std::cout<<"You have chosen an invalid outputType "<< outputType<<". Using NORMAL instead"<<std::endl;
-              outType = Autocorrelator::STANDARD;
+            	  LOG_WARN(autocorrelate_i, "You have chosen an invalid outputType "<< outputType<<". Using NORMAL instead");
+              outType = autocorrelator_output::STANDARD;
       }
-
       return outType;
 }
 
@@ -210,90 +316,51 @@ int autocorrelate_i::serviceFunction()
 
 	// NOTE: You must make at least one valid pushSRI call
 	bool pushSRI = tmp->sriChanged;
-	if (tmp->SRI.mode==1)
+	AutocorrelatorProcessor::SriParams sriParams;
 	{
-		std::cout<<"complex autocorrelation currently not supported"<<std::endl;
-		delete tmp;
-		return NORMAL;
+		boost::mutex::scoped_lock lock(processorLock);
+		map_type::iterator i = processors.find(tmp->streamID);
+		if (i==processors.end())
+		{
+			LOG_DEBUG(autocorrelate_i, "Creating new processor for stream: '" << tmp->streamID << "'");
+			pushSRI = true;
+			autocorrelator_output::type outputType = translateOutputType();
+			AutocorrelatorProcessor* ap = new  AutocorrelatorProcessor(realOutput, complexOutput, correlationSize, inputOverlap, numAverages, outputType,zeroMean, zeroCenter);
+			map_type::value_type processor(tmp->streamID, ap);
+			i = processors.insert(processors.end(),processor);
+		}
+		if (tmp->SRI.mode==0) //real input
+			sriParams = i->second->processReal(tmp->dataBuffer);
+		else  //complex input
+		{
+			std::vector<std::complex<float> >* cxInput =(std::vector<std::complex<float> >*)(&tmp->dataBuffer);
+			LOG_DEBUG(autocorrelate_i, "Processing cx data: '" << tmp->streamID << "' "<< cxInput->size());
+			sriParams = i->second->processComplex(*cxInput);
+		}
+
+		if (tmp->EOS) {
+			delete i->second;
+			processors.erase(i);
+			LOG_DEBUG(autocorrelate_i, "Received EOS for stream: '" << tmp->streamID << "'");
+		}
 	}
-
-	if (streamID!=tmp->streamID)
-		{
-			if (streamID=="")
-				streamID=tmp->streamID;
-			else
-			{
-				LOG_WARN(autocorrelate_i, "Dropping data from unknown stream ID.  Expected "
-						<< streamID << " received " << tmp->streamID);
-				delete tmp; //must delete the dataTransfer object when no longer needed
-				return NORMAL;
-			}
-		}
-
-	//use one big paramsChanged to reduce the number of booleans we will evaluate per loop
-	if (paramsChanged)
+	if (pushSRI || sriParams.forcePush)
 	{
-		std::cout<<"paramsChanged"<<std::endl;
-		if (updateCorrelationSize)
-		{
-			std::cout<<"component settign correlationSize to "<<correlationSize<<std::endl;
-			autocorrelator.setCorrelationSize(correlationSize);
-			pushSRI=true;
-			updateCorrelationSize=false;
-		}
-		if (updateInputOverlap)
-		{
-			autocorrelator.setOverlap(inputOverlap);
-			pushSRI=true;
-			updateInputOverlap=false;
-		}
-		if (updateNumAverages)
-		{
-			std::cout<<"setNumAverages "<<numAverages<<std::endl;
-			autocorrelator.setNumAverages(numAverages);
-			std::cout<<"setNumAverages done"<<std::endl;
-			pushSRI=true;
-			updateNumAverages=false;
-		}
-		if (updateOutputType)
-		{
-			Autocorrelator::OUTPUT_TYPE outType = translateOutputType();
-			std::cout<<"updateOutputType "<<outputType<<", "<< outType<<std::endl;
-			autocorrelator.setOutputType(outType);
-			updateOutputType=false;
-		}
-		if (updateZeroMean)
-		{
-			autocorrelator.setZeroMean(zeroMean);
-			updateZeroMean=false;
-		}
-		if (updateZeroCenter)
-		{
-			std::cout<<"calling updateZeroCenter with "<<zeroCenter<<std::endl;
-			autocorrelator.setZeroCenter(zeroCenter);
-			updateZeroCenter=false;
-		}
-		paramsChanged=false;
-		std::cout<<"paramsChanged done "<<zeroCenter<<std::endl;
-	}
-	autocorrelator.run(tmp->dataBuffer);
-	if (pushSRI)
-	{
-		size_t outFrameSize = 2*correlationSize-1;
-		if (outputType=="SUPERIMPOSED")
-			outFrameSize = correlationSize;
-
-		tmp->SRI.subsize=outFrameSize;//32*1024;//2*outputSize-1;
-		tmp->SRI.ydelta=(correlationSize-inputOverlap)*tmp->SRI.xdelta*numAverages;
+		LOG_DEBUG(autocorrelate_i, "pushing SRI: '" << tmp->streamID << "' ");
+		tmp->SRI.subsize=sriParams.subsize;
+		tmp->SRI.ydelta=sriParams.consumeLen*tmp->SRI.xdelta*sriParams.outputFramesPerInputFrame;
 		dataFloat_out->pushSRI(tmp->SRI);
 	}
 	if (!realOutput.empty())
+	{
+		LOG_DEBUG(autocorrelate_i, "sending real output: '" << tmp->streamID << "' "<< realOutput.size());
 		dataFloat_out->pushPacket(realOutput, tmp->T, tmp->EOS, tmp->streamID);
-
-	if (tmp->EOS) {
-		LOG_DEBUG(autocorrelate_i, "Received EOS for stream: '" << tmp->streamID << "'");
-		streamID = ""; // Reset streamID on EOS to allow processing of new stream
-		autocorrelator.flush();
+	}
+	if (!complexOutput.empty())
+	{
+		LOG_DEBUG(autocorrelate_i, "sending complex output: '" << tmp->streamID << "' "<< complexOutput.size());
+		std::vector<float>* outVec = (std::vector<float>*)(&complexOutput);
+		dataFloat_out->pushPacket(*outVec, tmp->T, tmp->EOS, tmp->streamID);
 	}
 
 	delete tmp; // IMPORTANT: MUST RELEASE THE RECEIVED DATA BLOCK
@@ -303,35 +370,41 @@ int autocorrelate_i::serviceFunction()
 
 void autocorrelate_i::correlationSizeChanged(const std::string&)
 {
-	updateCorrelationSize=true;
-	paramsChanged=true;
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setCorrelationSize(correlationSize);
 }
 void autocorrelate_i::inputOverlapChanged(const std::string&)
 {
-	updateInputOverlap=true;
-	paramsChanged=true;
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setOverlap(inputOverlap);
 }
 void autocorrelate_i::numAveragesChanged(const std::string&)
 {
 	//zero numAverages is not valid - change to 1
 	if (numAverages==0)
 		numAverages=1;
-	updateNumAverages=true;
-	paramsChanged=true;
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setNumAverages(numAverages);
 }
 void autocorrelate_i::outputTypeChanged(const std::string&)
 {
-	std::cout<<"outputTypeChanged "<<std::endl;
-	updateOutputType=true;
-	paramsChanged=true;
+	autocorrelator_output::type outputType = translateOutputType();
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setOutputType(outputType);
 }
 void autocorrelate_i::zeroMeanChanged(const std::string&)
 {
-	updateZeroMean=true;
-	paramsChanged=true;
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setZeroMean(zeroMean);
 }
 void autocorrelate_i::zeroCenterChanged(const std::string&)
 {
-	updateZeroCenter=true;
-	paramsChanged=true;
+	boost::mutex::scoped_lock lock(processorLock);
+	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+		i->second->setZeroMean(zeroCenter);
 }
