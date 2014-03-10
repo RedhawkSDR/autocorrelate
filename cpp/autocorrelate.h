@@ -25,6 +25,44 @@
 
 class autocorrelate_i;
 
+class AutocorrelatorProcessor
+{
+public:
+	struct SriParams
+	{
+		size_t subsize;
+		size_t consumeLen;
+		size_t outputFramesPerInputFrame;
+		bool forcePush;
+	};
+	AutocorrelatorProcessor(std::vector<float>& outReal, std::vector<std::complex<float> >& outComplex, size_t correlationSz, long overlap, size_t numAverages, autocorrelator_output::type outType, bool zeroMean, bool zeroCenter);
+
+	SriParams processReal(std::vector<float>& data);
+	SriParams processComplex(std::vector<std::complex<float> >&data);
+
+	void setCorrelationSize(const size_t& newVal);
+	void setOverlap(const size_t& newVal);
+	void setNumAverages(const size_t& newVal);
+	void setOutputType(autocorrelator_output::type& newVal);
+	void setZeroMean(const bool& newVal);
+	void setZeroCenter(const bool& newVal);
+
+private:
+	void setSubsize();
+	void setConsumeLen();
+
+	std::vector<float>& realOut;
+	std::vector<std::complex<float> >& complexOut;
+
+	Autocorrelator<float> realAutocorrelator;
+	Autocorrelator<std::complex<float> > complexAutocorrelator;
+	bool isComplex;
+	autocorrelator_output::type output;
+	size_t correlationSize;
+	long inputOverlap;
+	SriParams params;
+};
+
 class autocorrelate_i : public autocorrelate_base
 {
     ENABLE_LOGGING
@@ -34,24 +72,19 @@ class autocorrelate_i : public autocorrelate_base
         int serviceFunction();
 
     private:
+        typedef std::map<std::string, AutocorrelatorProcessor*> map_type;
         void correlationSizeChanged(const std::string&);
         void inputOverlapChanged(const std::string&);
         void numAveragesChanged(const std::string&);
         void outputTypeChanged(const std::string&);
         void zeroMeanChanged(const std::string&);
         void zeroCenterChanged(const std::string&);
-        Autocorrelator::OUTPUT_TYPE translateOutputType();
-
+        autocorrelator_output::type translateOutputType();
         RealVector realOutput;
-        Autocorrelator autocorrelator;
-        bool paramsChanged;
-        bool updateCorrelationSize;
-        bool updateInputOverlap;
-        bool updateNumAverages;
-        bool updateOutputType;
-        bool updateZeroMean;
-        bool updateZeroCenter;
-        std::string streamID;
+        ComplexVector complexOutput;
+
+        map_type processors;
+        boost::mutex processorLock;
 };
 
 #endif
