@@ -43,6 +43,7 @@ AutocorrelatorProcessor::AutocorrelatorProcessor(std::vector<float>& outReal, st
 	params.outputFramesPerInputFrame=1;
 	setSubsize();
 	setConsumeLen();
+	setStartIndex();
 }
 
 AutocorrelatorProcessor::SriParams AutocorrelatorProcessor::processReal(std::vector<float>& data)
@@ -105,6 +106,7 @@ void AutocorrelatorProcessor::setOutputType(autocorrelator_output::type& newVal)
 	realAutocorrelator.setOutputType(newVal);
 	complexAutocorrelator.setOutputType(newVal);
 	output=newVal;
+	setStartIndex();
 	setSubsize();
 }
 void AutocorrelatorProcessor::setZeroMean(const bool& newVal)
@@ -140,6 +142,27 @@ void AutocorrelatorProcessor::setConsumeLen()
 		params.forcePush=true;
 	}
 }
+void AutocorrelatorProcessor::setStartIndex()
+{
+	if (output==autocorrelator_output::STANDARD)
+	{
+		long startIndex = -correlationSize+1;
+		if (params.startIndex != startIndex)
+		{
+			params.startIndex = startIndex;
+			params.forcePush=true;
+		}
+	}
+	else
+	{
+		if (params.startIndex != 0)
+		{
+			params.startIndex = 0;
+			params.forcePush=true;
+		}
+	}
+}
+
 
 autocorrelate_i::autocorrelate_i(const char *uuid, const char *label) :
     autocorrelate_base(uuid, label)
@@ -349,6 +372,7 @@ int autocorrelate_i::serviceFunction()
 		LOG_DEBUG(autocorrelate_i, "pushing SRI: '" << tmp->streamID << "' ");
 		tmp->SRI.subsize=sriParams.subsize;
 		tmp->SRI.ydelta=sriParams.consumeLen*tmp->SRI.xdelta*sriParams.outputFramesPerInputFrame;
+		tmp->SRI.xstart=sriParams.startIndex*tmp->SRI.xdelta;
 		dataFloat_out->pushSRI(tmp->SRI);
 	}
 	if (!realOutput.empty())

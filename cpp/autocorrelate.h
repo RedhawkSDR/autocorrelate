@@ -33,6 +33,7 @@ public:
 		size_t subsize;
 		size_t consumeLen;
 		size_t outputFramesPerInputFrame;
+		long startIndex;
 		bool forcePush;
 	};
 	AutocorrelatorProcessor(std::vector<float>& outReal, std::vector<std::complex<float> >& outComplex, size_t correlationSz, long overlap, size_t numAverages, autocorrelator_output::type outType, bool zeroMean, bool zeroCenter);
@@ -50,6 +51,7 @@ public:
 private:
 	void setSubsize();
 	void setConsumeLen();
+	void setStartIndex();
 
 	std::vector<float>& realOut;
 	std::vector<std::complex<float> >& complexOut;
