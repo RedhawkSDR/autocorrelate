@@ -20,7 +20,7 @@ program.  If not, see http://www.gnu.org/licenses/.
 <softpkg id="DCE:ba63a554-d3dd-420a-9dce-6b34caa63268" name="autocorrelate" type="sca_compliant">
   <title></title>
   <author>
-    <name>null</name>
+    <name>REDHAWK</name>
   </author>
   <description>Frequency domain implemenation of a windowed autocorrelation algorithim.  This algorthim works by windowing the input data to break it up into separate frames.  Each frame is independently autocorrelated with each other using a &quot;full&quot; autocorrelation which includes the full transient response.  This is efficiently computed in the frequency domain.</description>
   <propertyfile type="PRF">
@@ -30,7 +30,7 @@ program.  If not, see http://www.gnu.org/licenses/.
     <localfile name="autocorrelate.scd.xml"/>
   </descriptor>
   <implementation id="cpp">
-    <description>The implementation contains descriptive information about the template for a software component.</description>
+    <description>C++ implementation</description>
     <code type="Executable">
       <localfile name="cpp/autocorrelate"/>
       <entrypoint>cpp/autocorrelate</entrypoint>
@@ -41,14 +41,14 @@ program.  If not, see http://www.gnu.org/licenses/.
     <os name="Linux"/>
     <dependency type="runtime_requirements">
       <softpkgref>
-        <localfile name="/components/fftlib/fftlib.spd.xml"/>
-        <implref refid="firstImplementation"/>
+        <localfile name="/deps/fftlib/fftlib.spd.xml"/>
+        <implref refid="cpp"/>
       </softpkgref>
     </dependency>
     <dependency type="runtime_requirements">
       <softpkgref>
-        <localfile name="/components/dsp/dsp.spd.xml"/>
-        <implref refid="firstImplementation"/>
+        <localfile name="/deps/dsp/dsp.spd.xml"/>
+        <implref refid="cpp"/>
       </softpkgref>
     </dependency>
     <processor name="x86"/>
