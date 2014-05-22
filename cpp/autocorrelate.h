@@ -75,12 +75,12 @@ class autocorrelate_i : public autocorrelate_base
 
     private:
         typedef std::map<std::string, AutocorrelatorProcessor*> map_type;
-        void correlationSizeChanged(const std::string&);
-        void inputOverlapChanged(const std::string&);
-        void numAveragesChanged(const std::string&);
-        void outputTypeChanged(const std::string&);
-        void zeroMeanChanged(const std::string&);
-        void zeroCenterChanged(const std::string&);
+        void correlationSizeChanged(const unsigned int *oldValue, const unsigned int *newValue);
+        void inputOverlapChanged(const int *oldValue, const int *newValue);
+        void numAveragesChanged(const unsigned int *oldValue, const unsigned int *newValue);
+        void outputTypeChanged(const std::string *oldValue, const std::string *newValue);
+        void zeroMeanChanged(const bool *oldValue, const bool *newValue);
+        void zeroCenterChanged(const bool *oldValue, const bool *newValue);
         autocorrelator_output::type translateOutputType();
         RealVector realOutput;
         ComplexVector complexOutput;

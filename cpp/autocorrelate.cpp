@@ -167,12 +167,12 @@ void AutocorrelatorProcessor::setStartIndex()
 autocorrelate_i::autocorrelate_i(const char *uuid, const char *label) :
     autocorrelate_base(uuid, label)
 {
-		setPropertyChangeListener("correlationSize", this, &autocorrelate_i::correlationSizeChanged);
-		setPropertyChangeListener("inputOverlap", this, &autocorrelate_i::inputOverlapChanged);
-		setPropertyChangeListener("numAverages", this, &autocorrelate_i::numAveragesChanged);
-		setPropertyChangeListener("outputType", this, &autocorrelate_i::outputTypeChanged);
-		setPropertyChangeListener("zeroMean", this, &autocorrelate_i::zeroMeanChanged);
-		setPropertyChangeListener("zeroCenter", this, &autocorrelate_i::zeroCenterChanged);
+	addPropertyChangeListener("correlationSize", this, &autocorrelate_i::correlationSizeChanged);
+	addPropertyChangeListener("inputOverlap", this, &autocorrelate_i::inputOverlapChanged);
+	addPropertyChangeListener("numAverages", this, &autocorrelate_i::numAveragesChanged);
+	addPropertyChangeListener("outputType", this, &autocorrelate_i::outputTypeChanged);
+	addPropertyChangeListener("zeroMean", this, &autocorrelate_i::zeroMeanChanged);
+	addPropertyChangeListener("zeroCenter", this, &autocorrelate_i::zeroCenterChanged);
 }
 
 autocorrelate_i::~autocorrelate_i()
@@ -392,43 +392,66 @@ int autocorrelate_i::serviceFunction()
 
 }
 
-void autocorrelate_i::correlationSizeChanged(const std::string&)
+void autocorrelate_i::correlationSizeChanged(const unsigned int *oldValue, const unsigned int *newValue)
 {
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setCorrelationSize(correlationSize);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		correlationSize = *newValue;
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setCorrelationSize(correlationSize);
+	}
 }
-void autocorrelate_i::inputOverlapChanged(const std::string&)
+
+void autocorrelate_i::inputOverlapChanged(const int *oldValue, const int *newValue)
 {
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setOverlap(inputOverlap);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		inputOverlap = *newValue;
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setOverlap(inputOverlap);
+	}
 }
-void autocorrelate_i::numAveragesChanged(const std::string&)
+
+void autocorrelate_i::numAveragesChanged(const unsigned int *oldValue, const unsigned int *newValue)
 {
-	//zero numAverages is not valid - change to 1
-	if (numAverages==0)
-		numAverages=1;
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setNumAverages(numAverages);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		numAverages = *newValue;
+		//zero numAverages is not valid - change to 1
+		if (numAverages==0)
+			numAverages=1;
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setNumAverages(numAverages);
+	}
 }
-void autocorrelate_i::outputTypeChanged(const std::string&)
+
+void autocorrelate_i::outputTypeChanged(const std::string *oldValue, const std::string *newValue)
 {
-	autocorrelator_output::type outputType = translateOutputType();
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setOutputType(outputType);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		this->outputType = *newValue;
+		autocorrelator_output::type outputType = translateOutputType();
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setOutputType(outputType);
+	}
 }
-void autocorrelate_i::zeroMeanChanged(const std::string&)
+
+void autocorrelate_i::zeroMeanChanged(const bool *oldValue, const bool *newValue)
 {
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setZeroMean(zeroMean);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		zeroMean = *newValue;
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setZeroMean(zeroMean);
+	}
 }
-void autocorrelate_i::zeroCenterChanged(const std::string&)
+
+void autocorrelate_i::zeroCenterChanged(const bool *oldValue, const bool *newValue)
 {
-	boost::mutex::scoped_lock lock(processorLock);
-	for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
-		i->second->setZeroMean(zeroCenter);
+	if (*oldValue != *newValue) {
+		boost::mutex::scoped_lock lock(processorLock);
+		zeroCenter = *newValue;
+		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
+			i->second->setZeroCenter(zeroCenter);
+	}
 }
