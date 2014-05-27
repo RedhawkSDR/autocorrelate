@@ -396,7 +396,6 @@ void autocorrelate_i::correlationSizeChanged(const unsigned int *oldValue, const
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		correlationSize = *newValue;
 		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
 			i->second->setCorrelationSize(correlationSize);
 	}
@@ -406,7 +405,6 @@ void autocorrelate_i::inputOverlapChanged(const int *oldValue, const int *newVal
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		inputOverlap = *newValue;
 		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
 			i->second->setOverlap(inputOverlap);
 	}
@@ -416,7 +414,6 @@ void autocorrelate_i::numAveragesChanged(const unsigned int *oldValue, const uns
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		numAverages = *newValue;
 		//zero numAverages is not valid - change to 1
 		if (numAverages==0)
 			numAverages=1;
@@ -429,7 +426,6 @@ void autocorrelate_i::outputTypeChanged(const std::string *oldValue, const std::
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		this->outputType = *newValue;
 		autocorrelator_output::type outputType = translateOutputType();
 		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
 			i->second->setOutputType(outputType);
@@ -440,7 +436,6 @@ void autocorrelate_i::zeroMeanChanged(const bool *oldValue, const bool *newValue
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		zeroMean = *newValue;
 		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
 			i->second->setZeroMean(zeroMean);
 	}
@@ -450,7 +445,6 @@ void autocorrelate_i::zeroCenterChanged(const bool *oldValue, const bool *newVal
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
-		zeroCenter = *newValue;
 		for (map_type::iterator i = processors.begin(); i!=processors.end(); i++)
 			i->second->setZeroCenter(zeroCenter);
 	}
