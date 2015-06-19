@@ -27,7 +27,7 @@ Prefix:         %{_prefix}
 %define _mandir        %{_prefix}/man
 %define _infodir       %{_prefix}/info
 
-Name:           autocorrelate
+Name:           rh.autocorrelate
 Version:        1.0.1
 Release:        1%{?dist}
 Summary:        Component %{name}
@@ -64,7 +64,7 @@ Component %{name}
 # Implementation cpp
 pushd cpp
 ./reconf
-%define _bindir %{_prefix}/dom/components/autocorrelate/cpp
+%define _bindir %{_prefix}/dom/components/rh/autocorrelate/cpp
 %configure
 make %{?_smp_mflags}
 popd
@@ -74,7 +74,7 @@ popd
 rm -rf $RPM_BUILD_ROOT
 # Implementation cpp
 pushd cpp
-%define _bindir %{_prefix}/dom/components/autocorrelate/cpp
+%define _bindir %{_prefix}/dom/components/rh/autocorrelate/cpp
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -85,9 +85,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/%{name}
-%{_prefix}/dom/components/%{name}/autocorrelate.scd.xml
-%{_prefix}/dom/components/%{name}/autocorrelate.prf.xml
-%{_prefix}/dom/components/%{name}/autocorrelate.spd.xml
-%{_prefix}/dom/components/%{name}/cpp
+%dir %{_prefix}/dom/components/rh/autocorrelate
+%{_prefix}/dom/components/rh/autocorrelate/autocorrelate.scd.xml
+%{_prefix}/dom/components/rh/autocorrelate/autocorrelate.prf.xml
+%{_prefix}/dom/components/rh/autocorrelate/autocorrelate.spd.xml
+%{_prefix}/dom/components/rh/autocorrelate/cpp
 

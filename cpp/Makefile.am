@@ -16,11 +16,11 @@
 # program.  If not, see http://www.gnu.org/licenses/.
 #
 
-ossieName = autocorrelate
-bindir = $(prefix)/dom/components/autocorrelate/cpp/
+ossieName = rh.autocorrelate
+bindir = $(prefix)/dom/components/rh/autocorrelate/cpp/
 bin_PROGRAMS = autocorrelate
 
-xmldir = $(prefix)/dom/components/autocorrelate/
+xmldir = $(prefix)/dom/components/rh/autocorrelate/
 dist_xml_DATA = ../autocorrelate.scd.xml ../autocorrelate.prf.xml ../autocorrelate.spd.xml
 
 distclean-local:
