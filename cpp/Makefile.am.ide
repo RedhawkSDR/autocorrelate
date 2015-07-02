@@ -25,5 +25,5 @@ redhawk_SOURCES_auto += autocorrelate.h
 redhawk_SOURCES_auto += autocorrelate_base.cpp
 redhawk_SOURCES_auto += autocorrelate_base.h
 redhawk_SOURCES_auto += main.cpp
-redhawk_INCLUDES_auto = -I/var/redhawk/sdr/dom/deps/dsp/include
-redhawk_INCLUDES_auto += -I/var/redhawk/sdr/dom/deps/fftlib/include
+redhawk_INCLUDES_auto = -I/var/redhawk/sdr/dom/deps/rh/fftlib/include
+redhawk_INCLUDES_auto += -I/var/redhawk/sdr/dom/deps/rh/dsp/include

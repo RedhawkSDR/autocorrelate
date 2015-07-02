@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE softpkg PUBLIC "-//JTRS//DTD SCA V2.2.2 SPD//EN" "softpkg.dtd">
 <!-- 
 This file is protected by Copyright. Please refer to the COPYRIGHT file distributed with this 
@@ -17,12 +17,12 @@ PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this 
 program.  If not, see http://www.gnu.org/licenses/.
 -->
-<softpkg version="1.0.1" id="DCE:c691b54e-16d3-11e5-86bf-3417ebc4aab5" name="rh.autocorrelate" type="sca_compliant">
-  <title/>
+<softpkg id="DCE:c691b54e-16d3-11e5-86bf-3417ebc4aab5" name="rh.autocorrelate" type="2.0.0" version="1.0.1">
+  <title></title>
   <author>
     <name>REDHAWK</name>
   </author>
-  <description>Frequency domain implemenation of a windowed autocorrelation algorithim.  This algorthim works by windowing the input data to break it up into separate frames.  Each frame is independently autocorrelated with each other using a "full" autocorrelation which includes the full transient response.  This is efficiently computed in the frequency domain.</description>
+  <description>Frequency domain implemenation of a windowed autocorrelation algorithim.  This algorthim works by windowing the input data to break it up into separate frames.  Each frame is independently autocorrelated with each other using a &quot;full&quot; autocorrelation which includes the full transient response.  This is efficiently computed in the frequency domain.</description>
   <propertyfile type="PRF">
     <localfile name="autocorrelate.prf.xml"/>
   </propertyfile>
@@ -39,19 +39,19 @@ program.  If not, see http://www.gnu.org/licenses/.
     <programminglanguage name="C++"/>
     <humanlanguage name="EN"/>
     <os name="Linux"/>
-    <dependency type="runtime_requirements">
-      <softpkgref>
-        <localfile name="/deps/fftlib/fftlib.spd.xml"/>
-        <implref refid="cpp"/>
-      </softpkgref>
-    </dependency>
-    <dependency type="runtime_requirements">
-      <softpkgref>
-        <localfile name="/deps/dsp/dsp.spd.xml"/>
-        <implref refid="cpp"/>
-      </softpkgref>
-    </dependency>
     <processor name="x86"/>
     <processor name="x86_64"/>
+    <dependency type="runtime_requirements">
+      <softpkgref>
+        <localfile name="/deps/rh/dsp/dsp.spd.xml"/>
+        <implref refid="cpp"/>
+      </softpkgref>
+    </dependency>
+    <dependency type="runtime_requirements">
+      <softpkgref>
+        <localfile name="/deps/rh/fftlib/fftlib.spd.xml"/>
+        <implref refid="cpp"/>
+      </softpkgref>
+    </dependency>
   </implementation>
 </softpkg>
