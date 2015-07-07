@@ -22,9 +22,9 @@ if [ "$1" = "rpm" ]; then
     if [ -e rh.autocorrelate.spec ]; then
         mydir=`dirname $0`
         tmpdir=`mktemp -d`
-        cp -r ${mydir} ${tmpdir}/rh.autocorrelate-1.0.1
-        tar czf ${tmpdir}/rh.autocorrelate-1.0.1.tar.gz --exclude=".svn" -C ${tmpdir} rh.autocorrelate-1.0.1
-        rpmbuild -ta ${tmpdir}/rh.autocorrelate-1.0.1.tar.gz
+        cp -r ${mydir} ${tmpdir}/rh.autocorrelate-2.0.0
+        tar czf ${tmpdir}/rh.autocorrelate-2.0.0.tar.gz --exclude=".svn" -C ${tmpdir} rh.autocorrelate-2.0.0
+        rpmbuild -ta ${tmpdir}/rh.autocorrelate-2.0.0.tar.gz
         rm -rf $tmpdir
     else
         echo "Missing RPM spec file in" `pwd`
