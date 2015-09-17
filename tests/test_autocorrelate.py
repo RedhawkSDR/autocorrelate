@@ -38,6 +38,16 @@ from ossie.cf import CF
 from omniORB import CORBA
 import __builtin__
 
+#Numpy changed the api for correlate in version 1.5
+from distutils.version import LooseVersion
+NUMPY_GREATER_15 = LooseVersion(numpy.__version__) >= LooseVersion('1.5')
+_orig_correlate = numpy.correlate
+def correlatewrap(data,filter,command, *kwargs):
+    return _orig_correlate(data,numpy.conj(filter),command, *kwargs)
+if NUMPY_GREATER_15:
+    numpy.correlate = correlatewrap
+
+
 def toClipboard(data):
     import pygtk
     pygtk.require('2.0')
