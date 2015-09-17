@@ -22,10 +22,13 @@ bin_PROGRAMS = autocorrelate
 
 xmldir = $(prefix)/dom/components/rh/autocorrelate/
 dist_xml_DATA = ../autocorrelate.scd.xml ../autocorrelate.prf.xml ../autocorrelate.spd.xml
-ACLOCAL_AMFLAGS = -I$(OSSIEHOME)/share/aclocal/ossie
+ACLOCAL_AMFLAGS = -I m4 -I${OSSIEHOME}/share/aclocal/ossie
+AUTOMAKE_OPTIONS = subdir-objects
+
 
 
 distclean-local:
+	rm -rf m4
 	rm -f config.*
 	rm -rf autom4te.cache
 	rm -f acinclude.m4
