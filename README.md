@@ -1,8 +1,8 @@
-# REDHAWK Basic Components autocorrelate
+# REDHAWK Basic Components rh.autocorrelate
  
 ## Description
 
-Contains the source and build script for the REDHAWK Basic Components autocorrelate. This component is a Frequency domain implemenation of a windowed autocorrelation algorithim.  This algorthim works by windowing the input data to break it up into separate frames.  Each frame is independently autocorrelated with each other using a &quot;full&quot; autocorrelation which includes the full transient response.  This is efficiently computed in the frequency domain.
+Contains the source and build script for the REDHAWK Basic Components rh.autocorrelate. This component is a Frequency domain implemenation of a windowed autocorrelation algorithim.  This algorthim works by windowing the input data to break it up into separate frames.  Each frame is independently autocorrelated with each other using a &quot;full&quot; autocorrelation which includes the full transient response.  This is efficiently computed in the frequency domain.
 
 
 ## Installation Instructions
@@ -15,4 +15,4 @@ This work is protected by Copyright. Please refer to the [Copyright File](COPYRI
 
 ## License
 
-REDHAWK Basic Components autocorrelate is licensed under the GNU General Public License (GPL).
+REDHAWK Basic Components rh.autocorrelate is licensed under the GNU General Public License (GPL).
