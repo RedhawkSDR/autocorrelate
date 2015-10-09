@@ -392,7 +392,7 @@ int autocorrelate_i::serviceFunction()
 
 }
 
-void autocorrelate_i::correlationSizeChanged(const unsigned int *oldValue, const unsigned int *newValue)
+void autocorrelate_i::correlationSizeChanged(const CORBA::ULong *oldValue, const CORBA::ULong *newValue)
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
@@ -401,7 +401,7 @@ void autocorrelate_i::correlationSizeChanged(const unsigned int *oldValue, const
 	}
 }
 
-void autocorrelate_i::inputOverlapChanged(const int *oldValue, const int *newValue)
+void autocorrelate_i::inputOverlapChanged(const CORBA::Long *oldValue, const CORBA::Long *newValue)
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);
@@ -410,7 +410,7 @@ void autocorrelate_i::inputOverlapChanged(const int *oldValue, const int *newVal
 	}
 }
 
-void autocorrelate_i::numAveragesChanged(const unsigned int *oldValue, const unsigned int *newValue)
+void autocorrelate_i::numAveragesChanged(const CORBA::ULong *oldValue, const CORBA::ULong *newValue)
 {
 	if (*oldValue != *newValue) {
 		boost::mutex::scoped_lock lock(processorLock);

@@ -75,9 +75,9 @@ class autocorrelate_i : public autocorrelate_base
 
     private:
         typedef std::map<std::string, AutocorrelatorProcessor*> map_type;
-        void correlationSizeChanged(const unsigned int *oldValue, const unsigned int *newValue);
-        void inputOverlapChanged(const int *oldValue, const int *newValue);
-        void numAveragesChanged(const unsigned int *oldValue, const unsigned int *newValue);
+        void correlationSizeChanged(const CORBA::ULong *oldValue, const CORBA::ULong *newValue);
+        void inputOverlapChanged(const CORBA::Long *oldValue, const CORBA::Long *newValue);
+        void numAveragesChanged(const CORBA::ULong *oldValue, const CORBA::ULong *newValue);
         void outputTypeChanged(const std::string *oldValue, const std::string *newValue);
         void zeroMeanChanged(const bool *oldValue, const bool *newValue);
         void zeroCenterChanged(const bool *oldValue, const bool *newValue);
