@@ -583,22 +583,18 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             newOut = self.sink.getData()
             if newOut:
                 if complexData:
-                    newOut = packCx(newOut)
-                out.extend(newOut)
+                    if self.sink.sri().subsize>0:
+                        for sublist in newOut:
+                            out.append(packCx(sublist))
+                    else:
+                        out.append(packCx(newOut))
+                else:
+                    out.extend(newOut)
                 count=0
             elif count==100:
                 break
             time.sleep(.01)
             count+=1
-        sri= self.sink.sri()
-        framed = []
-        i=0
-        if sri.subsize>0:
-            #break out the data into frames according to the subsize
-            while i*sri.subsize<len(out):
-                framed.append(out[i*sri.subsize:(i+1)*sri.subsize])
-                i+=1
-            out=framed
         return out
     
 if __name__ == "__main__":
